@@ -1,12 +1,20 @@
 local skynet = require "skynet"
 
-skynet.start(function()
-	local loginserver = skynet.newservice("logind")
-	local gate = skynet.newservice("gated", loginserver)
-
-	skynet.call(gate, "lua", "open" , {
-		port = 8888,
-		maxclient = 64,
-		servername = "sample",
+local function main()
+	local proto = skynet.uniqueservice("protoloader")
+	skynet.call(proto, "lua", "load", {
+		"proto.c2s",
+		"proto.s2c"
 	})
-end)
+
+	local login = skynet.newservice("login")
+	skynet.call(login, "lua", "start", {
+		port = 8888,
+		maxclient = 1000,
+		nodelay = true
+	})
+
+	skynet.exit();
+end
+
+skynet.start(main)
